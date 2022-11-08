@@ -17,7 +17,7 @@ const fetchTransactions = async (userId, pageSize = 999) => {
 
 const fetchMedicines = async () => {
   try {
-    return axios.get('http://${IP}/medicine').then((response) => response.data);
+    return axios.get(`http://${IP}/medicine`).then((response) => response.data);
   } catch (error) {
     console.log(error);
   }
@@ -104,14 +104,14 @@ const placeOrder = async (userId) => {
     return axios
       .post(
         `http://${IP}/order`,
+        {},
         {
           headers: { USER_ID: userId },
-        },
-        {}
+        }
       )
       .then((response) => {
         notifyMessage('Order Placed');
-        return (isSuccess = true);
+        return { isSuccess: true };
       });
   } catch (error) {
     console.log(error);

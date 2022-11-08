@@ -13,9 +13,14 @@ export default function Medicine({
     <TouchableOpacity style={style} onPress={onPress}>
       <View style={styles.upperContainer}>
         <Image style={styles.image} source={{ uri: imageSrc }} />
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{title || ''}</Text>
       </View>
-      <Text style={styles.description}>{description}</Text>
+      {description && (
+        <Text style={styles.description}>{`${description?.slice(
+          0,
+          150
+        )}...`}</Text>
+      )}
     </TouchableOpacity>
   );
 }

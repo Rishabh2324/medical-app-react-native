@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: 'contain',
     justifyContent: 'center',
+    marginTop: 10,
   },
 
   price: {
@@ -105,6 +106,6 @@ const styles = StyleSheet.create({
   description: {
     color: '#00628B',
     fontWeight: '600',
-    fontSize: 20,
+    fontSize: 14,
   },
 });
