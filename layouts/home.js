@@ -1,16 +1,24 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
-import Container from '../components/container';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function Home({ children, pageTitle }) {
+export default function Home({
+  children,
+  pageTitle,
+  onPress,
+  showCart = true,
+}) {
   return (
     <View style={styles.container}>
       <View style={styles.profile}>
         <Text style={styles.pageTitle}>{pageTitle}</Text>
-        <Image
-          style={styles.profileImage}
-          source={require('../assets/example-logo.jpg')}
-        />
+        {showCart && (
+          <TouchableOpacity onPress={onPress}>
+            <Image
+              style={styles.profileImage}
+              source={require('../assets/cart.png')}
+            />
+          </TouchableOpacity>
+        )}
       </View>
       {children}
     </View>
@@ -29,15 +37,14 @@ const styles = StyleSheet.create({
   },
   profile: {
     height: '10%',
-    marginTop: 50,
+    marginTop: 20,
     marginBottom: 20,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 50,
+    width: 30,
+    height: 30,
   },
 });

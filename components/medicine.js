@@ -1,16 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 
-export default function Medicine({ imageSrc, title, description, style }) {
+export default function Medicine({
+  imageSrc,
+  title,
+  description,
+  style,
+  onPress,
+}) {
   return (
-    <View style={style}>
+    <TouchableOpacity style={style} onPress={onPress}>
       <View style={styles.upperContainer}>
-        <Image style={styles.image} source={imageSrc} />
+        <Image style={styles.image} source={{ uri: imageSrc }} />
         <Text style={styles.title}>{title}</Text>
       </View>
       <Text style={styles.description}>{description}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 

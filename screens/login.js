@@ -1,5 +1,6 @@
+import axios from 'axios';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,42 +9,64 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import { useAuthContext } from '../context/useAuthContext';
+import { useAuthContext } from '../context/authContext';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [disabled, setDisabled] = useState(true);
 
   useEffect(() => {
-    if (email.length > 0 && password.length > 0) {
+    if (username.length > 0 && password.length > 0) {
       setDisabled(false);
     } else setDisabled(true);
-  }, [email, password]);
+  }, [username, password]);
 
-  const { signIn } = useAuthContext();
+  const { state, signIn } = useAuthContext();
+
+  React.useEffect(() => {
+    console.log(state);
+  }, [state]);
+
+  const handleLogin = (username, password) => {
+    const data = {
+      username: username,
+      password: password,
+    };
+    axios
+      .post('http://192.168.29.206:8080/user', data)
+      .then(function (response) {
+        console.log('USER LOGGED IN');
+        const { userId, username } = response.data;
+        if (userId && username) {
+          signIn(userId);
+        } else {
+          console.log('Incorrect username and passeword');
+        }
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+  };
 
   return (
     <View style={styles.container}>
-      <Image
-        style={styles.image}
-        source={require('../assets/example-logo.jpg')}
-      />
+      <Image style={styles.image} source={require('../assets/appLogo.png')} />
 
       <StatusBar style="auto" />
       <View style={styles.inputView}>
         <TextInput
           style={styles.TextInput}
-          placeholder="Email."
+          placeholder="Username"
           placeholderTextColor="#003f5c"
-          onChangeText={(email) => setEmail(email)}
+          onChangeText={(username) => setUsername(username)}
         />
       </View>
 
       <View style={styles.inputView}>
         <TextInput
           style={styles.TextInput}
-          placeholder="Password."
+          placeholder="Password"
           placeholderTextColor="#003f5c"
           secureTextEntry
           onChangeText={(password) => setPassword(password)}
@@ -51,21 +74,14 @@ export default function Login() {
       </View>
 
       <View style={styles.actionsButtons}>
-        <TouchableOpacity style={styles.loginBtn}>
-          <Text style={styles.loginText}>Sign Up</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.loginBtn, { opacity: disabled ? 0.8 : 1 }]}
           disabled={disabled}
-          onPress={() => !disabled && signIn({ email, password })}
+          onPress={() => !disabled && handleLogin(username, password)}
         >
           <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity>
-        <Text style={styles.forgot_button}>Forgot Password?</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -79,6 +95,8 @@ const styles = StyleSheet.create({
   },
 
   image: {
+    width: 150,
+    height: 150,
     marginBottom: 50,
   },
 
@@ -110,7 +128,7 @@ const styles = StyleSheet.create({
   },
 
   loginBtn: {
-    width: '40%',
+    width: '100%',
     borderRadius: 25,
     height: 50,
     alignItems: 'center',

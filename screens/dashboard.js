@@ -1,25 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import Home from '../layouts/home';
 import Container from '../components/container';
 import IconWithText from '../components/iconWithText';
+import NothingFound from '../components/nothingFound';
 
-import { tansactionData } from '../data/transaction';
+import { fetchTransactions } from '../api';
 import { navigationLinks } from '../data/navaigaion';
+import { useAuthContext } from '../context/authContext';
+import { TouchableOpacity } from 'react-native';
 
-export default function Dashboard({ route, navigation }) {
-  const [tansactions, setTansactions] = useState([]);
+export default function Dashboard({ navigation }) {
+  const { userId } = useAuthContext();
+  const [transactions, setTransactions] = useState([]);
+
+  const fetchData = async () => {
+    const response = await fetchTransactions(userId);
+    setTransactions(response);
+  };
 
   useEffect(() => {
-    setTansactions(tansactionData);
-  }, []);
+    userId && fetchData();
+  }, [userId]);
 
   return (
     <Home
       pageTitle="Dashboard"
+      onPress={() => navigation.push('Cart')}
       children={
         <>
           <Container style={styles.navigationMenu}>
@@ -29,36 +37,36 @@ export default function Dashboard({ route, navigation }) {
                 style={styles.menuItem}
                 imageSrc={item.imageSrc}
                 text={item.text}
+                onPress={() => navigation.push(item.path)}
               />
             ))}
           </Container>
-          {tansactions.length ? (
+          <View style={styles.view}>
+            <Text style={styles.text}>Transactions</Text>
+            <TouchableOpacity onPress={fetchData}>
+              <Text style={styles.text}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+          {transactions?.length ? (
             <Container style={styles.tansactions}>
               <FlatList
-                data={tansactionData}
-                renderItem={({ item }, index) => (
+                data={transactions}
+                renderItem={({ item }) => (
                   <IconWithText
-                    key={index}
-                    imageSrc={item.imageSrc}
+                    key={item.id}
+                    imageSrc={{
+                      uri: 'https://icon-library.com/images/order-icon/order-icon-18.jpg',
+                    }}
                     style={styles.menuItem}
-                    text={item.text}
-                    onPress={() =>
-                      navigation.push('MedicinePage', {
-                        itemId: Math.floor(Math.random() * 100),
-                      })
-                    }
+                    text={`OrderId: ${item.id}, Date: ${new Date(
+                      item.createdAt || ''
+                    ).toLocaleDateString()}, ${item.amount}Rs`}
                   />
                 )}
               />
             </Container>
           ) : (
-            <Container
-              children={
-                <Text style={styles.noTransactionText}>
-                  No Transactions found
-                </Text>
-              }
-            />
+            <NothingFound text="No Transactions found" />
           )}
         </>
       }
@@ -76,17 +84,20 @@ const styles = StyleSheet.create({
     height: '50%',
   },
 
+  view: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  text: {
+    color: '#00628B',
+    fontWeight: '600',
+    fontSize: 20,
+    marginBottom: 10,
+  },
+
   menuItem: {
     maxHeight: 50,
     marginBottom: 10,
-    marginLeft: 30,
-    marginRight: 30,
-  },
-  noTransactionText: {
-    color: '#81A594',
-    fontWeight: '700',
-    fontSize: 24,
-    textAlign: 'center',
-    padding: 50,
+    margin: 20,
   },
 });

@@ -1,29 +1,81 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import Medicine from '../components/medicine';
+import React, { useEffect, useState } from 'react';
+import * as DocumentPicker from 'expo-document-picker';
 
-export default function MedicinePage({
-  imageSrc,
-  title,
-  description,
-  price,
-  style,
-}) {
+import { StyleSheet, Text, View, Image } from 'react-native';
+import { addToCart, fetchMedicine } from '../api';
+import Medicine from '../components/medicine';
+import { PrimaryButton } from '../components/primaryButton';
+import { useAuthContext } from '../context/authContext';
+import Home from '../layouts/home';
+import { Alert } from 'react-native';
+
+export default function MedicinePage({ route, navigation }) {
+  const { itemId } = route.params;
+  const { userId } = useAuthContext();
+
+  const [data, setData] = useState({
+    image: '',
+    name: '',
+    description: '',
+    price: '',
+  });
+
+  const fetchData = async () => {
+    const response = await fetchMedicine(itemId);
+    setData(response);
+  };
+
+  const addItemToCart = async (prescription) => {
+    if (prescription) {
+      _pickDocument();
+    } else await addToCart(userId, itemId, 1);
+  };
+
+  const createTwoButtonAlert = (text) =>
+    Alert.alert('Selected Prescription', text, [
+      { text: 'OK', onPress: async () => await addToCart(userId, itemId, 1) },
+    ]);
+
+  const _pickDocument = async () => {
+    let result = await DocumentPicker.getDocumentAsync({});
+    createTwoButtonAlert(result.uri);
+  };
+
+  useEffect(() => {
+    itemId && fetchData();
+  }, [itemId]);
+
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={[styles.loginBtn, { width: '20%' }]}>
-        <Text style={styles.loginText}>Back</Text>
-      </TouchableOpacity>
-      <Medicine imageSrc={imageSrc} title={title} />
-      <View style={styles.details}>
-        <Image source={imageSrc} />
-        <Text style={styles.price}>{price}</Text>
-        <Text style={styles.description}>{description}</Text>
-      </View>
-      <TouchableOpacity style={styles.loginBtn}>
-        <Text style={styles.loginText}>Add to cart</Text>
-      </TouchableOpacity>
-    </View>
+    <>
+      <PrimaryButton
+        text="Back"
+        onPress={() => navigation.goBack()}
+        style={{ width: '20%', marginLeft: 20, marginTop: 20 }}
+      />
+      <Home
+        pageTitle={data.name}
+        onPress={() => navigation.push('Cart')}
+        children={
+          <>
+            <View style={styles.container}>
+              <Medicine
+                imageSrc={data.image}
+                title={data.prescriptionRequired && 'Prescription Required'}
+              />
+              <View style={styles.details}>
+                <Image source={{ uri: data.image }} style={styles.image} />
+                <Text style={styles.price}>{`${data.price} Rs`}</Text>
+                <Text style={styles.description}>{data.description}</Text>
+              </View>
+              <PrimaryButton
+                text="Add to cart"
+                onPress={() => addItemToCart(data.prescriptionRequired)}
+              />
+            </View>
+          </>
+        }
+      />
+    </>
   );
 }
 
@@ -34,12 +86,12 @@ const styles = StyleSheet.create({
   },
 
   details: {
-    height: '75%',
+    height: '60%',
   },
 
   image: {
     borderRadius: 20,
-    height: 100,
+    height: 200,
     resizeMode: 'contain',
     justifyContent: 'center',
   },
@@ -54,18 +106,5 @@ const styles = StyleSheet.create({
     color: '#00628B',
     fontWeight: '600',
     fontSize: 20,
-  },
-
-  loginBtn: {
-    borderRadius: 25,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#81A594',
-  },
-
-  loginText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
   },
 });
